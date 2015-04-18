@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void show(void *universe, int width, int height);
-void evolve(void *universe, int weight, int height);
+void show(int width, int height, unsigned universe[height][width]);
+void evolve(int width, int height, unsigned universe[height][width]);
 void game(int width, int height);
 
 int main(int argc, char **argv) {
@@ -31,14 +31,12 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void show(void *universe, int width, int height) {
-    int (*univ)[width] = universe;
-
+void show(int width, int height, unsigned universe[height][width]) {
     printf("\033[H");
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            printf(univ[y][x] ? "\033[07m  \033[m" : "  ");
+            printf(universe[y][x] ? "\033[07m  \033[m" : "  ");
         }
 
         printf("\n");
@@ -47,8 +45,7 @@ void show(void *universe, int width, int height) {
     fflush(stdout);
 }
 
-void evolve(void *universe, int width, int height) {
-    unsigned (*univ)[width] = universe;
+void evolve(int width, int height, unsigned universe[height][width]) {
     unsigned newUniverse[height][width];
 
     for (int x = 0; x < width; x++) {
@@ -57,23 +54,23 @@ void evolve(void *universe, int width, int height) {
 
             for (int y1 = y - 1; y1 <= y + 1; y1++) {
                 for (int x1 = x - 1; x1 <= x + 1; x1++) {
-                    if (univ[(y1 + height) % height][(x1 + width) % width]) {
+                    if (universe[(y1 + height) % height][(x1 + width) % width]) {
                         n++;
                     }
                 }
             }
 
-            if (univ[y][x]) {
+            if (universe[y][x]) {
                 n--;
             }
 
-            newUniverse[y][x] = (n == 3 || (n == 2 && univ[y][x]));
+            newUniverse[y][x] = (n == 3 || (n == 2 && universe[y][x]));
         }
     }
 
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
-            univ[y][x] = newUniverse[y][x];
+            universe[y][x] = newUniverse[y][x];
         }
     }
 }
@@ -88,9 +85,9 @@ void game(int width, int height) {
     }
 
     while (1) {
-        show(universe, width, height);
+        show(width, height, universe);
 
-        evolve(universe, width, height);
+        evolve(width, height, universe);
 
         usleep(20000);
     }
